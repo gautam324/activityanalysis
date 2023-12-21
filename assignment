@@ -1,0 +1,60 @@
+# Specify the file paths where you saved the downloaded files
+
+library(caret)
+setwd("~/Projects/R/Coursera-Practical-Machine-Learning-Assignment-1/")
+train_path <- "Files/home/rstudioProjectsRCoursera-Practical-Machine-Learning-Assignment-1/pml-training(1).csv"
+test_path <- "Files/home/rstudioProjectsRCoursera-Practical-Machine-Learning-Assignment-1/pml-testing(1).csv"
+
+# Read the files into R
+training <- read.csv(train_path)
+testing <- read.csv(test_path)
+
+
+label <- createDataPartition(training$classe, p = 0.7, list = FALSE)
+train <- training[label, ]
+test <- training[-label, ]
+
+NZV <- nearZeroVar(train)
+train <- train[ ,-NZV]
+test <- test[ ,-NZV]
+
+label <- apply(train, 2, function(x) mean(is.na(x))) > 0.95
+train <- train[, -which(label, label == FALSE)]
+test <- test[, -which(label, label == FALSE)]
+
+train <- train[ , -(1:5)]
+test <- test[ , -(1:5)]
+
+
+library(corrplot)
+corrMat <- cor(train[,-54])
+corrplot(corrMat, method = "color", type = "lower", tl.cex = 0.8, tl.col = rgb(0,0,0))
+
+
+library(rpart)
+library(rpart.plot)
+library(rattle)
+set.seed(13908)
+modelDT <- rpart(classe ~ ., data = train, method = "class")
+fancyRpartPlot(modelDT)
+
+
+predictDT <- predict(modelDT, test, type = "class")
+confMatDT <- confusionMatrix(predictDT, test$classe)
+confMatDT
+
+
+library(caret)
+set.seed(13908)
+control <- trainControl(method = "cv", number = 3, verboseIter=FALSE)
+modelRF <- train(classe ~ ., data = train, method = "rf", trControl = control)
+modelRF$finalModel
+
+predictGBM <- predict(modelGBM, test)
+confMatGBM <- confusionMatrix(predictGBM, test$classe)
+confMatGBM
+
+predictRF <- predict(modelRF, testing)
+predictRF
+
+
