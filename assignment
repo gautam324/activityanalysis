@@ -1,4 +1,3 @@
-# Specify the file paths where you saved the downloaded files
 
 library(caret)
 setwd("~/Projects/R/Coursera-Practical-Machine-Learning-Assignment-1/")
